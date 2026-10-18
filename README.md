@@ -22,4 +22,38 @@ A scheduling application for small businesses.
 
 ## Current status
 
-Initial project setup. Application code has not been created yet.
+- Spring Boot backend with `/api/hello` and `/api/status` endpoints.
+- React and TypeScript frontend with a basic Luz welcome page.
+- Frontend and backend currently run independently.
+- No database connection yet.
+
+## Run locally
+
+Prerequisites: Java 21 and nvm with the Node.js version from `.nvmrc`.
+
+Run these commands from the repository root in separate terminals.
+
+### Backend
+
+cd backend
+./mvnw spring-boot:run
+
+Backend endpoint: http://localhost:8080/api/hello
+
+### Frontend
+
+nvm use
+cd frontend
+npm ci
+npm run dev
+
+Open the local URL printed by Vite, usually http://localhost:5173.
+
+## Checks
+
+From the backend directory:
+./mvnw test
+
+From the frontend directory:
+npm run build
+npm run lint
