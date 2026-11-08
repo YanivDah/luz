@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import com.yaniv.luz.model.Service;
+import com.yaniv.luz.dto.ServiceResponse;
 import com.yaniv.luz.service.ServiceService;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class ServiceController {
         this.serviceService = serviceService;
     }
     @GetMapping("/api/businesses/{businessId}/services")
-    public List<Service> getServices(@PathVariable Long businessId) {
-        return serviceService.getServices();
+    public List<ServiceResponse> getServices(@PathVariable Long businessId) {
+        return serviceService.getServices(businessId);
     }
 }
