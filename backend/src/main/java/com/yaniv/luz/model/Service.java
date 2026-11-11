@@ -66,6 +66,13 @@ public class Service {
         return isActive;
     }
 
+    public void updatePrice(int newPrice) {
+        if (newPrice < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+        this.price = newPrice;
+    }
+
     protected Service() {
         // Default constructor for JPA
     }

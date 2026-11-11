@@ -13,8 +13,15 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import com.yaniv.luz.dto.ServiceResponse;
 import com.yaniv.luz.service.ServiceService;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import org.springframework.http.MediaType;
+import org.springframework.context.annotation.Import;
+import com.yaniv.luz.config.SecurityConfig;
 
 @WebMvcTest(ServiceController.class)
+@Import(SecurityConfig.class)
 class ServiceControllerTest {
 
     @Autowired
@@ -44,5 +51,29 @@ class ServiceControllerTest {
         mockMvc.perform(get("/api/businesses/999/services"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void shouldUpdatePriceForAuthenticatedOwner() throws Exception {
+
+        when(serviceService.updateServicePrice(1L, 95))
+                .thenReturn(new ServiceResponse(1L, "Haircut", 30, 95));
+
+        mockMvc.perform(patch("/api/services/1/price")
+                .with(user("owner@luz.test").roles("OWNER"))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"price\":95}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.price").value(95));
+    }
+
+    @Test
+    void shouldRejectPriceUpdateWithoutCsrf() throws Exception {
+        mockMvc.perform(patch("/api/services/1/price")
+                .with(user("owner@luz.test").roles("OWNER"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"price\":95}"))
+                .andExpect(status().isForbidden());
     }
 }
