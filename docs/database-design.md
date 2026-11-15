@@ -27,6 +27,7 @@ Relationships:
 - One business has many appointments.
 - One business has many working-hour records.
 - One business has many availability exceptions.
+- One business has many customers.
 
 ## 2. Services
 
@@ -63,8 +64,9 @@ Table: appointments
 | id (PK) | Unique appointment identifier |
 | business_id (FK) | Business receiving the appointment |
 | service_id (FK) | Service selected by the customer |
+| customer_id (FK) | Customer associated with the appointment |
 | customer_name | Customer's full name |
-| customer_email | Customer's email address |
+| customer_phone | Customer's phone number |
 | start_time | Appointment start date and time |
 | end_time | Appointment end date and time |
 | price_at_booking | Service price at booking time |
@@ -74,6 +76,8 @@ Table: appointments
 Relationships:
 - Each appointment belongs to one business.
 - Each appointment references one service.
+- Each appointment belongs to one customer.
+- One customer can have many appointments.
 - One service can have many appointments.
 
 Business Rules:
@@ -89,8 +93,36 @@ Business Rules:
   are preserved after booking.
 - Bookings are accepted only 60 minutes to
   30 days in advance.
+- The customer must belong to the same business as the appointment.
+- Customer name and phone are preserved at booking time.
 
-## 4. Business Hours
+## 4. Customers
+
+Table: customers
+
+| Column | Description |
+|---|---|
+| id (PK) | Unique customer identifier |
+| business_id (FK) | Business to which the customer belongs |
+| name | Customer's full name |
+| phone | Customer's normalized phone number |
+
+Relationships:
+- Each customer belongs to one business.
+- One business can have many customers.
+- One customer can have many appointments.
+
+Business Rules:
+- Customer name and phone number are required.
+- Phone numbers are stored as strings.
+- Phone numbers must be normalized before storage.
+- The combination of business_id and phone must be unique.
+- The same phone number may belong to different businesses.
+- Existing customers are reused when booking another appointment.
+- Customers do not have login accounts in the MVP.
+- Customers can only be accessed through their associated business.
+
+## 5. Business Hours
 
 Table: business_hours
 
@@ -113,7 +145,7 @@ Business Rules:
 - Changes that conflict with future confirmed
   appointments are rejected.
 
-## 5. Availability Exceptions
+## 6. Availability Exceptions
 
 Table: availability_exceptions
 
@@ -142,7 +174,7 @@ Business Rules:
 - Existing appointments are never cancelled
   automatically.
 
-## 6. Business Owners
+## 7. Business Owners
 
 Table: business_owners
 
@@ -164,7 +196,7 @@ Business Rules:
 - Owners can manage only their own business.
 - Self-registration is outside the MVP scope.
 
-## 7. Entity Relationship Diagram
+## 8. Entity Relationship Diagram
 
 ```mermaid
 erDiagram
@@ -176,7 +208,7 @@ erDiagram
     SERVICES ||--o{ APPOINTMENTS : booked_as
 ```
 
-## 8. Availability Calculation Rules
+## 9. Availability Calculation Rules
 
 Available time slots are calculated in this order:
 

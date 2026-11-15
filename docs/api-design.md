@@ -28,7 +28,7 @@ Example JSON body:
   "serviceId": 5,
   "startTime": "2026-10-22T10:00:00+03:00",
   "customerName": "Yoav Cohen",
-  "customerEmail": "yoav@example.com"
+  "customerPhone": "0501234567"
 }
 ```
 

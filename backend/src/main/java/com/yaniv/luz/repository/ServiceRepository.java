@@ -8,4 +8,7 @@ import java.util.Optional;
 public interface ServiceRepository extends JpaRepository<Service, Long> {
     List<Service> findByBusiness_IdAndIsActiveTrue(Long businessId);
     Optional<Service> findByIdAndBusiness_Id(Long serviceId, Long businessId);
+    Optional<Service> findByIdAndBusiness_IdAndIsActiveTrue(
+    Long serviceId, Long businessId
+);
 }
