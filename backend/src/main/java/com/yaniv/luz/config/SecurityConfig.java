@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import jakarta.servlet.DispatcherType;
+import java.time.Clock;
 
 @Configuration
 @EnableWebSecurity
@@ -29,6 +30,7 @@ public class SecurityConfig {
             .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
             .requestMatchers("/api/businesses/*/services").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/businesses/*/appointments").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/businesses/*/services/*/availability").permitAll()
             .anyRequest().authenticated()
         )
         .formLogin(form -> form.permitAll());
@@ -39,5 +41,10 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public Clock clock() {
+        return Clock.systemUTC();   
     }
 }
