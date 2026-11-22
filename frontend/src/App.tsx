@@ -1,13 +1,10 @@
 import './App.css'
+import BookingPage from './pages/BookingPage'
 
 function App() {
   return (
-    <main> 
-      <h1>Luz</h1>     
-      <p>Appointment scheduling for small businesses.</p>
-      <p>My first full-stack project.</p>
-      </main>
-  )
+    <BookingPage />
+  );
 }
 
 export default App  
