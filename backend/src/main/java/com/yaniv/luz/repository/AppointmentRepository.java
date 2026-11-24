@@ -19,4 +19,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
         Instant endTime,
         Instant startTime
     );
+
+    List<Appointment> findByBusiness_IdOrderByStartTimeAsc(Long businessId);
 }

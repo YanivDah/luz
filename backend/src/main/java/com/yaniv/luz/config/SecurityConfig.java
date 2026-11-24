@@ -31,9 +31,18 @@ public class SecurityConfig {
             .requestMatchers("/api/businesses/*/services").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/businesses/*/appointments").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/businesses/*/services/*/availability").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/csrf").permitAll()
             .anyRequest().authenticated()
         )
-        .formLogin(form -> form.permitAll());
+        .formLogin(form -> form
+            .successHandler((request, response, authentication) -> {
+                response.setStatus(200);
+            })
+            .failureHandler((request, response, exception) -> {
+                response.setStatus(401);
+            })
+            .permitAll()
+        );
 
     return http.build();
     }

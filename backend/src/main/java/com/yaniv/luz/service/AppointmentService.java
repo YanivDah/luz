@@ -16,6 +16,13 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import com.yaniv.luz.model.BusinessHours;
+import org.springframework.security.core.context.SecurityContextHolder;
+import com.yaniv.luz.repository.BusinessOwnerRepository;
+import com.yaniv.luz.model.BusinessOwner;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import com.yaniv.luz.dto.AppointmentResponse;
+import com.yaniv.luz.dto.OwnerAppointmentResponse;
 
 @Service
 public class AppointmentService {
@@ -24,21 +31,24 @@ public class AppointmentService {
     private final CustomerRepository customerRepository;
     private final ServiceRepository serviceRepository;
     private final BusinessHoursRepository businessHoursRepository;
+    private final BusinessOwnerRepository businessOwnerRepository;
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
             CustomerRepository customerRepository,
             ServiceRepository serviceRepository,
-            BusinessHoursRepository businessHoursRepository) {
+            BusinessHoursRepository businessHoursRepository,
+            BusinessOwnerRepository businessOwnerRepository) {
 
         this.appointmentRepository = appointmentRepository;
         this.customerRepository = customerRepository;
         this.serviceRepository = serviceRepository;
         this.businessHoursRepository = businessHoursRepository;
+        this.businessOwnerRepository = businessOwnerRepository;
     }
 
     @Transactional
-    public Appointment createAppointment(Long businessId, Long serviceId,
+    public AppointmentResponse createAppointment(Long businessId, Long serviceId,
                                   Instant startTime, String customerName, String customerPhone) {
 
         com.yaniv.luz.model.Service service = serviceRepository
@@ -105,7 +115,17 @@ public class AppointmentService {
         Appointment appointment = new Appointment(service.getBusiness(), service, customer,
             customerName, normalizedPhone, startTime, endTime, service.getPrice());
         
-        return appointmentRepository.save(appointment);
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+
+        return new AppointmentResponse(
+                savedAppointment.getId(),
+                savedAppointment.getService().getId(),
+                savedAppointment.getService().getName(),
+                savedAppointment.getStartTime(),
+                savedAppointment.getEndTime(),
+                savedAppointment.getPriceAtBooking(),
+                savedAppointment.getStatus().name()
+        );
     }
 
     private String normalizePhone(String phone) {
@@ -117,5 +137,36 @@ public class AppointmentService {
             throw new IllegalArgumentException("Invalid Israeli mobile phone number");
         }
         return normalized;
+    }
+
+    public List<OwnerAppointmentResponse> getAppointmentsForBusiness(Long businessId){
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        BusinessOwner owner = businessOwnerRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.FORBIDDEN, "Business owner not found"
+                ));
+
+        if (!owner.getBusiness().getId().equals(businessId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "You do not have access to this business"
+            );
+        }
+
+        return appointmentRepository.findByBusiness_IdOrderByStartTimeAsc(businessId)
+                .stream()
+                .map(appointment -> new OwnerAppointmentResponse(
+                        appointment.getId(),
+                        appointment.getCustomerName(),
+                        appointment.getCustomerPhone(),
+                        appointment.getService().getName(),
+                        appointment.getStartTime(),
+                        appointment.getEndTime(),
+                        appointment.getPriceAtBooking(),
+                        appointment.getStatus().name()
+                ))
+                .toList();
     }
 }
