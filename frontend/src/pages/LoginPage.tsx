@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 
 function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loginError, setLoginError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const navigate = useNavigate();
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -38,7 +39,7 @@ function LoginPage() {
 
         if (loginResponse.status === 200) {
             setLoginError(null);
-            setIsLoggedIn(true);
+            navigate('/dashboard');
             console.log('Login successful');
         } else if (loginResponse.status === 401) {
             setLoginError('Invalid email or password');
@@ -53,14 +54,6 @@ function LoginPage() {
             }
     }
 
-    if (isLoggedIn) {
-        return (
-            <main>
-                <h1>Welcome to Luz!</h1>
-                <p>You are successfully logged in.</p>
-            </main>
-        );
-    }
     return (
         <main>
             <h1>Business Owner Login</h1>

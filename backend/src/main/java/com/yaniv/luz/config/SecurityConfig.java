@@ -12,6 +12,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import jakarta.servlet.DispatcherType;
 import java.time.Clock;
+import org.springframework.http.HttpStatus;
 
 @Configuration
 @EnableWebSecurity
@@ -34,6 +35,13 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/csrf").permitAll()
             .anyRequest().authenticated()
         )
+        .exceptionHandling(ex -> ex
+            .defaultAuthenticationEntryPointFor(
+                (request, response, authException) ->
+                    response.sendError(HttpStatus.UNAUTHORIZED.value()),
+                PathPatternRequestMatcher.withDefaults().matcher("/api/**")
+            )
+        )
         .formLogin(form -> form
             .successHandler((request, response, authentication) -> {
                 response.setStatus(200);
@@ -42,6 +50,11 @@ public class SecurityConfig {
                 response.setStatus(401);
             })
             .permitAll()
+        )
+        .logout(logout -> logout
+            .logoutSuccessHandler((request, response, authentication) -> {
+                response.setStatus(200);
+            })
         );
 
     return http.build();
